@@ -1,0 +1,42 @@
+cwlVersion: v1.2
+class: FEMWorkflow
+id: sapphire_eucaim_workflow
+label: SAPPHIRE Cancer Imaging Federated Workflow
+doc: Top-level workflow for executing SAPPHIRE across EUCAIM hospital nodes.
+execution_sites:
+  - alias: central_orchestrator
+    kind: single
+    selection: fixed
+    value: eucaim_central_hub
+  - alias: hospital_nodes
+    kind: group
+    selection: user
+    min: 2
+bundles:
+  - bundle_id: sapphire_fl_bundle
+    site_bindings:
+      - task_id: sapphire_server_task
+        site: central_orchestrator
+      - task_id: sapphire_client_task
+        site: hospital_nodes
+inputs:
+  - id: model_architecture
+    type: string
+    scope: global
+    required: true
+    targets:
+      - bundle_id: sapphire_fl_bundle
+        bundle_input_name: selected_model
+  - id: rabbitmq_endpoint
+    type: string
+    scope: global
+    required: true
+    targets:
+      - bundle_id: sapphire_fl_bundle
+        bundle_input_name: shared_broker
+outputs:
+  - id: final_trained_model
+    type: File
+    source:
+      bundle_id: sapphire_fl_bundle
+      bundle_output_name: federated_model

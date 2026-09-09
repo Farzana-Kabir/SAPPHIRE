@@ -1,0 +1,39 @@
+cwlVersion: v1.2
+class: FEMBundle
+id: sapphire_fl_bundle
+label: SAPPHIRE Federated Learning Bundle
+doc: Pairs the central aggregator with participating hospital clients.
+mode: federated
+tasks:
+  - task_id: sapphire_server_task
+    role: server
+    multiplicity:
+      type: single
+  - task_id: sapphire_client_task
+    role: client
+    multiplicity:
+      type: multiple
+      min: 2
+shared_inputs:
+  - id: selected_model
+    type: string
+    required: true
+    constraints:
+      enum: [logistic, logistic_bn, mlp, transformer_lite, decision_tree_soft, rf]
+    targets:
+      - task_id: sapphire_client_task
+        task_input_name: model_type
+  - id: shared_broker
+    type: string
+    required: true
+    targets:
+      - task_id: sapphire_server_task
+        task_input_name: broker_url
+      - task_id: sapphire_client_task
+        task_input_name: broker_url
+shared_outputs:
+  - id: federated_model
+    type: File
+    source:
+      task_id: sapphire_server_task
+      task_output_name: global_model

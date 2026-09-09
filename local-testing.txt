@@ -1,0 +1,15 @@
+docker build -t fkabir0503/sapphire-fem:latest .
+
+
+#run server
+
+docker run --name test-server-local ^
+  -v "config.json":/app/config.json ^
+  fkabir0503/sapphire-fem:latest ^
+  python -m sapphire.server --broker-host "amqps://ziveknnm:Qdcf42fxP7k19SkuwUZOAofH2S8d7oWO@raccoon.lmq.cloudamqp.com/ziveknnm" --output /tmp/final_global_model.json
+
+
+docker run --name test-client-1 --rm ^
+  -v "C:\Users\frznk\OneDrive - Universitat de Barcelona\Desktop\sapphire-fem\data\h1.csv":/app/dataset.csv ^
+  fkabir0503/sapphire-fem:latest ^
+  python -m sapphire.client --node hospital1 --data /app/dataset.csv --model mlp --broker-host "amqps://ziveknnm:Qdcf42fxP7k19SkuwUZOAofH2S8d7oWO@raccoon.lmq.cloudamqp.com/ziveknnm"

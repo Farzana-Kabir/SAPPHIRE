@@ -1,0 +1,31 @@
+cwlVersion: v1.2
+class: FEMTask
+id: sapphire_client_task
+label: SAPPHIRE Federated Client Task
+doc: Runs local prototype training on node-level data.
+requirements:
+  - class: DockerRequirement
+    dockerPull: fkabir0503/sapphire-fem:latest
+baseCommand: [python, -m, sapphire.client]
+inputs:
+  - id: node_name
+    type: string
+    required: true
+    inputBinding:
+      prefix: --node
+  - id: dataset_file
+    type: File
+    required: true
+    inputBinding:
+      prefix: --data
+  - id: model_type
+    type: string
+    required: true
+    inputBinding:
+      prefix: --model
+  - id: broker_url
+    type: string
+    required: true
+    inputBinding:
+      prefix: --broker-host
+outputs: []

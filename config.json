@@ -1,0 +1,24 @@
+{
+  "_comment": "GLOBAL config — identical for the server and every client.",
+  "network": {
+    "num_clients": 4,
+    "num_rounds": 5,
+    "model": ""
+  },
+  "model_groups": {
+    "grp1_linear": ["logistic", "logistic_bn"],
+    "grp2_neural": ["mlp", "transformer_lite"],
+    "grp3_tree": ["decision_tree_soft", "rf"]
+  },
+  "labels": {
+    "num_classes": 2,
+    "class_names": { "0": "Negative/Benign", "1": "Positive/Malignant" }
+  },
+  "message_broker": {
+    "_comment": "Non-secret broker settings only. The connection URL/credentials live in _env's RABBITMQ_HOST, never here.",
+    "queue_name": "fl_server_queue_v2",
+    "exchange_name": "fl_broadcast_exchange",
+    "heartbeat_seconds": 3600,
+    "blocked_connection_timeout_seconds": 3600
+  }
+}

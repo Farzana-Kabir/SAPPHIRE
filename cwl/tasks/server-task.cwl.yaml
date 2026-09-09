@@ -1,0 +1,25 @@
+cwlVersion: v1.2
+class: FEMTask
+id: sapphire_server_task
+label: SAPPHIRE Central Aggregator Task
+doc: Coordinates prototype aggregation across nodes.
+requirements:
+  - class: DockerRequirement
+    dockerPull: fkabir0503/sapphire-fem:latest
+baseCommand: [python, -m, sapphire.server]
+inputs:
+  - id: broker_url
+    type: string
+    required: true
+    inputBinding:
+      prefix: --broker-host
+  - id: output_path
+    type: string
+    default: /app/output/final_global_model.json
+    inputBinding:
+      prefix: --output
+outputs:
+  - id: global_model
+    type: File
+    outputBinding:
+      glob: /app/output/final_global_model.json
