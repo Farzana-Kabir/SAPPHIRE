@@ -1,0 +1,41 @@
+{
+  "_comment": "GLOBAL config — EUCAIM).",
+  "network": {
+    "num_clients": 2,
+    "num_rounds": 5,
+    "model": "cnn_lite",
+    "broker_url": "amqp://guest:guest@127.0.0.1:5672/"
+  },
+  "dataset_config": {
+    "mode": "mode_a",
+    "patient_id_columns": ["ProxID", "PatientID", "case_id", "subject_id"],
+    "image_size": [128, 128],
+    "channels": 1
+  },
+  "model_groups": {
+    "grp1_vision": ["cnn_lite", "cnn_bn"],
+    "grp2_vision": ["resnet_lite"]
+  },
+  "labels": {
+    "num_classes": 2,
+    "target_columns": ["ClinSig", "Diagnosis", "completion_status"],
+    "class_names": { 
+      "0": "Non-Cancer", 
+      "1": "Cancer"
+    },
+    "label_mapping": {
+      "true": 1,
+      "false": 0,
+      "cancer": 1,
+      "non-cancer": 0,
+      "1": 1,
+      "0": 0
+    }
+  },
+  "message_broker": {
+    "queue_name": "fl_server_queue_v2",
+    "exchange_name": "fl_broadcast_exchange",
+    "heartbeat_seconds": 3600,
+    "blocked_connection_timeout_seconds": 3600
+  }
+}

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ### AL ###
 #Template for AL projects for Dynamics 365 Business Central
 #launch.json folder
@@ -21,3 +22,15 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+=======
+__pycache__/
+*.pyc
+.pytest_cache/
+test_output/
+final_global_model.json
+data/*.csv
+.venv/
+env/
+data1/
+data2/
+>>>>>>> 43a7d30 (SAPPHIRE-EUCAIM)

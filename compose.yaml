@@ -1,0 +1,28 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    command: python -m sapphire.server --config /app/config.json --rounds 5 --broker-host "amqps://ziveknnm:Qdcf42fxP7k19SkuwUZOAofH2S8d7oWO@raccoon.lmq.cloudamqp.com/ziveknnm"
+    volumes:
+      - ./config.json:/app/config.json
+
+  hospital-1:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    command: --node hospital1 --data /app/dataset.csv --model logistic --broker-host "amqps://ziveknnm:Qdcf42fxP7k19SkuwUZOAofH2S8d7oWO@raccoon.lmq.cloudamqp.com/ziveknnm"
+    volumes:
+      - ./data/h1.csv:/app/dataset.csv
+    depends_on:
+      - server
+
+  hospital-2:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+    command: --node hospital2 --data /app/dataset.csv --model mlp --broker-host "amqps://ziveknnm:Qdcf42fxP7k19SkuwUZOAofH2S8d7oWO@raccoon.lmq.cloudamqp.com/ziveknnm"
+    volumes:
+      - ./data/h2.csv:/app/dataset.csv
+    depends_on:
+      - server
