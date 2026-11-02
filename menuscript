@@ -1,0 +1,332 @@
+\documentclass[twocolumn, 8pt]{article}
+\usepackage{tikz}
+\usepackage{lipsum}
+\usepackage{JAMIA}
+\usepackage{amsmath}
+\usepackage{cuted}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{booktabs, multirow, graphicx}
+\setlist{nosep}
+\title{SAPPHIRE: Secure Aggregation for Privacy-preserving Prototype-based Heterogeneous-fl Integrated with Random-number Embedding }
+\author[1]{Farzana Kabir}
+\author[2,3]{Carles Hernandez-Ferrer}
+\author[1]{Josep Lluís Gelpí}
+\affil[1]{Universitat de Barcelona (UB), Barcelona, Spain}
+\affil[2]{Barcelona Supercomputing Center (BSC), Barcelona, Spain}
+\affil[3]{Spanish National Bioinformatics Institute (INB)/ELIXIR-ES, Spain}
+\date{}
+
+\begin{document}
+
+% make title and abstract
+%==============================
+\par\noindent\rule[-7pt]{15.5cm}{0.2em}
+\begin{strip}
+    \begin{minipage}{.88\textwidth}
+        \maketitle
+        \small
+        \abstractSection
+        {} % Objective
+        {} % Materials and Methods
+        {} % Results
+        {} % Discussion
+        {} % Conclusion
+        {Federated learning, Privacy, Security, Heterogeneous FL} % Key words
+        
+        \par\noindent\rule[-7pt]{15.5cm}{0.2em}
+        \hspace{2cm}
+    \end{minipage}
+\end{strip}
+%==============================
+
+
+% Introduction
+%==============================
+\section*{Introduction}
+Federated learning (FL) has emerged as a promising machine learning paradigm that enables collaborative model training while preserving data privacy. Instead of collecting vast amounts of sensitive private data into a single, central location, federated learning brings the training process directly to the data. Despite these unique characteristics, traditional weight-based federated learning can experience performance degradation due to diverse data across multiple clients \cite{zhang2026federated,gao2025fedpc}. Unfortunately, in the healthcare industry, hospitals and other healthcare-related entities follow highly strict data-sharing policies to ensure patient privacy and security in all manners, following GDPR and other frameworks \cite{quazi2024data}, which contradicts any common features or collaboration among different clients. Heterogeneous FL relaxes the conventional FL assumption that all clients share a common model architecture; moreover, it also focuses on the heterogeneity of data distributions, model architectures, network environments, and hardware devices among participating clients \cite{ye2023heterogeneous}. The aggregation problem then shifts from weight-space averaging to how a server can reconcile contributions from, for example, a logistic regression model and a neural network into a coherent global signal. This is precisely where prototype-based FL (PBFL) emerges as a more convenient and secure solution \cite{lee2025heterogeneous, li2023prototype}. In PBFL, clients do not share model weights or raw data but instead share prototypes focusing on class embeddings. However, prototype sharing introduces its own privacy risks, as aggregated prototype vectors can be exploited by an intruder or curious server to infer sensitive characteristics of local datasets \cite{zuo2024privacy}. 
+Existing prototype-based heterogeneous FL methods either rely on public datasets for knowledge transfer or expose prototype information to the aggregation server. Consequently, no current approach simultaneously provides arbitrary model heterogeneity (cross-family), proper privacy preservation from the internal entities (server, other clients) and external intruders, secure prototype aggregation, and dropout recovery.\\
+In order to mitigate all the existing criticality and security issues, we introduce SAPPHIRE (Secure Aggregation for Privacy-preserving Prototype-based Heterogeneous-fl Integrated with Random-number Embedding), a federated learning protocol that jointly addresses model heterogeneity and cryptographic privacy.
+
+\subsection*{Overview of SAPPHIRE Protocol}
+ SAPPHIRE is a privacy-preserving, model-agnostic protocol, where clients may independently select from linear, neural, and tree architectures while ensuring that the aggregation server remains computationally blind to individual client updates. Except for the aggregated global prototype, no individual client's local prototype vector is ever exposed in plaintext to the server or peer clients. It is achieved by employing a unique double-masking strategy using secure multiparty computation (SMPC), combining pairwise Diffie–Hellman masks with individual local masks as part of additive secret sharing and secured by Shamir secret sharing for dropout recovery. The protocol is implemented in Python with authenticated AES-GCM transport over a RabbitMQ message broker and is evaluated on a clinical benchmark dataset, demonstrating a substantially higher balanced accuracy and accurate reconstruction across all tested dropout scenarios.
+ 
+The principal contributions of this work are fourfold.
+
+      \begin{itemize}
+          \item SAPPHIRE introduced a prototype aggregation protocol supporting arbitrary heterogeneous models. Clients are fully independent in terms of model architecture from any family: linear, neural, or tree-based architecture, and also in terms of dataset size and feature dimensionality. SAPPHIRE uses a centralized aggregated strategy where nodes share the prototype only with the aggregator node.
+          
+          \item SAPPHIRE provides privacy preservation, including blind-server guarantees. The only information about any individual client's dataset that the orchestrator can access is the number of classes. All client-specific information is cryptographically secured before it reaches the orchestrator server. On the other hand, it uses a broker-mediated communication architecture, eliminating direct client interaction.
+       
+          \item SAPPHIRE achieves an high level of security through secure multi-party computation (SMPC) based on a unique double-masking secure aggregation mechanism extending SecAgg to prototype exchange. Each client's prototype update is scrambled by two different masks, both utilizing cryptographically secure pseudorandom numbers (CSPRNG). This secure aggregation protocol is inspired by Flower SecAgg \cite{bonawitz2016practical,li2021secure}, extended by the additional local mask.
+       
+          \item SAPPHIRE is implemented and evaluated using a real clinical federated learning scenario including an orchestrator, message broker, and multiple clients. The simulation result demonstrates ...
+      \end{itemize}
+     
+
+%==============================
+\section*{Related Work}
+
+This section explores some recent research works related to different aspects and variants of federated learning, like heterogeneous FL, prototype-based FL, privacy-preserving and secure data aggregation, etc. We analyze how different prototype-based FL solutions address model heterogeneity and, to what extent, their accuracy rate and fault tolerance. Moreover, we also examine the privacy and security considerations to identify critical security and heterogeneity gaps in existing frameworks that SAPPHIRE is designed to address. 
+\subsection*{Heterogenous Federated Learning}
+The primary version of federated learning, denoted as \textbf{FedAvg} (Federated Averaging) in \cite{mcmahan2017communication,sun2021decentralized}, was designed to aggregate client model updates (weights) and average them, assuming they share the same architecture. There was no scope for heterogeneity. As a generalization and re-parametrization of FedAvg, \textbf{FedProx} framework introduced heterogeneity in federated networks using a proximal term to limit client drift under non-IID data \cite{li2020federated}. \textbf{SCAFFOLD} uses control variates (variance reduction) to correct the ‘client drift’ and is not affected by data heterogeneity or client sampling. \textbf{FedMD} and \textbf{FedDF} introduced heterogeneous FL via model distillation, using entirely different model architectures and private data \cite{li2019fedmd, lin2020ensemble}. The first one lets clients transfer knowledge via predictions on a shared public dataset rather than weights, and the second one uses unlabeled or synthetic data at the server.
+
+\textbf{PPPML-HMI} is a privacy-preserving personalized FL for heterogeneous healthcare data \cite{zhou2024personalized}. It utilizes PerFedAvg (personalized FedAvg) to allow each healthcare institution to maintain a customized, accurate model tailored to its specific data distributions, and the security is ensured using cyclic secure aggregation combined with homomorphic encryption. Its heterogeneity is at the level of data and device, not model family. \textbf{PHMS-Fed} introduced heterogeneous multi-modal sensor fusion based on federated learning \cite{wang2025privacy}. This framework explicitly handles non-IID data generated across varying, decentralized healthcare institutions. Feature heterogeneity is one of the main contributions of PHMS-Fed, alongside a privacy-preserving feature transformation function, layered with secure parameter aggregation via weighted averaging. \textbf{AAFV} \cite{xu2024privacy} and \textbf{FedSKD} \cite{weng2026fedskd} both provide architecture-agnostic heterogeneity—the former via structure-agnostic federated voting and the later via peer-to-peer knowledge distillation. 
+
+\subsection*{Prototype-based Federated Learning}
+\textbf{FedProto} \cite{tan2022fedproto} introduced the foundational framework for prototype-based federated learning for heterogeneous client data, where instead of sharing entire model weights or gradients, clients send abstract, class-level representations called "prototypes" to a central server. Sharing only class prototypes drastically reduces communication overhead and data leakage risks. However, cross-family heterogeneity is not what it demonstrates. \textbf{FedRFQ} is another PBFL method designed to mitigate prototype redundancy and prototype failures across non-IID datasets. It defends against poisoned data, but it does not hide good prototypes from the server, since the server receives raw prototypes \cite{FedRFQ}. \textbf{FedAdapterProto} is a specialized, inherently interpretable PBFL framework designed to analyze retinal fundus images. It addresses statistical data heterogeneity by sending class prototypes and ``lightweight adapters" to the server instead of full weights \cite{ofosu2025prototype}. However, sending adapter weights still requires all clients to share an identical base model architecture (homogeneous models). \textbf{MPCPFL, ProtoMFL, ProMoE-FL} successfully adopt feature heterogeneity by utilizing modality-specific prototypes to bridge the gap between misaligned feature spaces \cite{yu2026mpcpfl, zhang2026protomfl, chhetri2026promoefl}. While effective for structural data variations, they rely entirely on the inherent dimensionality reduction of prototypes for privacy.
+
+\subsection*{Secure Aggregation and Privacy-Preserving FL}
+\textbf{SecAgg} is a secure aggregation technique for privacy-preserving FL that allows a central server to compute the sum of individual client updates (e.g., model gradients) without ever seeing the raw, unmasked data of any individual participant using Secure Multi-Party Computation (SMPC) \cite{bonawitz2016practical}. \textbf{LightSecAgg} and \textbf{CESA} are lightweight approaches that significantly reduce the communication overhead needed to recover dropped clients \cite{so2022lightsecagg,nazemi2024boosting}.Protocol like \textbf{FedPropSAG} is a prototype-based aggregation mechanism which is cryptographically secure by combining SecAgg and Differential Privacy to classify MRI brain tumors. Another multi-server protocol, which is also named \textbf{SecAgg} was introduced to explicitly aim for FedAvg-consistent aggregation using additive secret sharing \cite{yang2026secagg}. However, almost all of these highly secure methods force every hospital to use the exact same underlying model backbone to align the features.
+Table \ref{tab1} demonstrates a brief comparative analysis for different federated learning frameworks in terms of heterogeneity, privacy, and security requirements.
+
+\begin{table*}[hbt!]
+\setlength{\abovecaptionskip}{5pt}
+\caption{Comparative analysis of heterogeneity, privacy, and security across federated learning frameworks.}
+\label{tab1}
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{} l p{2.2cm} p{3.5cm} p{2cm} p{3.8cm} p{4.2cm} p{2.5cm} @{}}
+    \toprule
+    \multirow{2}{*}{\textbf{Framework(s)}} & \multicolumn{3}{c}{\textbf{Heterogeneity}} & \multirow{2}{*}{\textbf{Privacy Preservation}} & \multirow{2}{*}{\textbf{Security Mechanism}} & \multirow{2}{*}{\textbf{Fault Tolerance}} \\
+    \cmidrule(lr){2-4}
+    & \textbf{Data} & \textbf{Model} & \textbf{Feature} & & & \\
+    \midrule
+    
+    \textbf{FedAvg, FedProx, SCAFFOLD} & Yes (Non-IID) & None \newline(Shared arch.) & None & No & None & Not addressed \\
+    \addlinespace
+    
+    \textbf{FedMD, FedDF, AAFV, FedSKD} & Yes (Non-IID) & Cross-family \newline(Distillation / Voting) & None & No & None \newline(Public/Synthetic data or P2P) & Not addressed \\
+    \addlinespace
+    
+    \textbf{FedProto, FedAdapterProto, FedRFQ} & Yes (Non-IID) & Same-family \newline(Fixed bases/adapters) & None & No & None / BFT against poisoning & Not addressed \\
+    \addlinespace
+    
+    \textbf{MPCPFL, ProtoMFL, ProMoE-FL} & Yes (Non-IID) & None & Yes \newline(Missing data) & No & Dimensionality reduction \newline(Plaintext) & Not addressed \\
+    \addlinespace
+    
+    \textbf{PHMS-Fed} & Yes (Non-IID) & None \newline(Weighted avg.) & Yes \newline(Sensor fusion) & Yes \newline(Server blind to raw parameters) & Secure parameter aggregation & Not addressed \\
+    \addlinespace
+    
+    \textbf{SecAgg, LightSecAgg, CESA} & Yes (Non-IID) & None \newline(Fixed tensor shapes) & None & Yes \newline(Server blind to individuals) & SMPC / Secret sharing & Yes \newline(Exact recovery) \\
+    \addlinespace
+    
+    \textbf{SecAgg (Multi-server)} & Yes (Non-IID) & None \newline(FedAvg-consistent) & None & Yes \newline(Requires non-colluding servers) & Additive secret sharing & Not addressed \\
+    \addlinespace
+    
+    \textbf{PPPML-HMI} & Yes (Device) & None \newline(Fixed arch.) & None & Yes \newline(Requires direct client-to-client ring comms.) & Cyclic SecAgg + \newline Homomorphic Encryption & No \\
+    \addlinespace
+    
+    \textbf{FedPropSAG} & Yes (MRI Data)& None \newline(Shared backbone) & None & Yes \newline(Server blind, but DP noise lowers accuracy) & SecAgg + DP & Yes \newline(Inherits SecAgg) \\
+    \addlinespace
+    
+    \midrule
+    \textbf{SAPPHIRE (Proposed)} & \textbf{Yes (Non-IID)} & \textbf{Cross-family} & \textbf{Yes} & \textbf{Yes \newline(Server fully blind, \newline TLS via RabbitMQ, \newline No direct client communication.)} & \textbf{SMPC Double Masking + \newline Shamir Secret Sharing} & \textbf{Yes \newline(Exact threshold)} \\
+    \bottomrule
+    
+\end{tabular}%
+}
+\end{table*}
+
+%==============================
+\section*{SAPPHIRE Protocol Architecture}
+\subsection*{Priliminaries} 
+\begin{itemize}
+    
+    \item Diffie-Hellman (DH) key exchange: 
+    Diffie-Hellman (DH) key exchange method is a way of secure communication between two parties to share secret keys without exposing anything to third parties or intruders \cite{rescorla1999diffie}. By using a safe prime and a primitive root, each party generates a public and private key pair using the formula: 
+\[(priv\_k \in (0, p),  pub\_k = g^{priv\_k} \bmod p)\]
+. This public key is shared between all the entities and used to generate a shared secret for each pair $(i,j) $ as follows:
+\[ s_{i,j} = (pub\_k_j)^{priv\_k_i} \bmod p\]. 
+By the symmetry of the Diffie-Hellman exchange, both entities compute the same value. This shared secret is then used to encrypt subsequent communication using strong cryptographic techniques.
+    \item Cryptographically Secure Pseudorandom Number Generation (CSPRNG): Unlike standard PRNG, CSPRNG is designed to guarantee unpredictability and withstand advanced cryptographic attacks. A deterministic CSPRNG expands a short secret seed into a 
+    long output stream that is computationally indistinguishable from true randomness to any party that does not know the seed. Two parties holding the same seed can independently generate the identical stream. SAPPHIRE employs CSPRNG using two mechanisms: HKDF \cite{rfc5869, krawczyk2010hmac}and AES-CTR \cite{kessler2003overview,rfc3686}. 
+    
+    \item Secure Multi-Party Computation (SMPC): SAPPHIRE utilizes different methods of SMPC:
+    \begin{itemize}
+        \item Pairwise additive masking: allows multiple participants to obfuscate their data using a pairwise mask derived from the shared seed, added by one party and subtracted by the other \cite{zhang2025efficient}. Hence, while aggregated, the masks are canceled out automatically, revealing the exact aggregated sum without exposing any individual client's raw data.
+        \item Shamir's Secret Sharing (SSS): Shamir's scheme splits a secret into $N$ distinct shares and distributes them among participants. The original key can only be reconstructed if a minimum threshold $t$ of active shares is available. It encodes the secret as the constant term of a degree-$(t-1)$ polynomial and distributes evaluations of that polynomial as shares; reconstruction uses Lagrange interpolation. This threshold structure makes the scheme fault-tolerant by enabling dropout recovery. 
+        \item Secure Aggregation (SecAgg): SecAgg is a specialized SMPC protocol designed for federated learning infrastructure that combines both pairwise additive masking (for hiding the individual raw value) and Shamir's Secret Sharing (to recover the masks of dropped clients). It allows the orchestrator server to aggregate model updates in a privacy-preserving manner without revealing any individual data. 
+    \end{itemize}
+
+\end{itemize}
+
+\subsection*{System Model} 
+The entire SAPPHIRE protocol is based on three major participants:
+\begin{itemize}
+    \item The clients are the institutional data holders. In the healthcare scenario, the clients can be any hospital, research labs, or any other entity that is in charge of holding the patient record/dataset. Clients are responsible for local model training using their individual dataset for the federated learning purpose. Clients are assumed to be honest participants.
+    \item The orchestration server is the central entity responsible for broadcasting the global model update and secure aggregation for federated averaging. It is the sole entity that communicates with all clients in a privacy-preserving manner. The server is assumed honest but curious, and all aggregation and reconstruction operate exclusively on masked values, so the server never handles an individual client's prototype in plaintext.
+    \item  The message broker is a stateless relay that acts as a postman, which forwards encrypted messages (like a sealed envelope) between the server and clients; it has no access to the actual contents and takes no part in the overall computation. Every communication in the entire SAPPHIRE protocol is broker-mediated. All communication channels are secured via Transport Layer Security (TLS) to prevent external attacks.
+\end{itemize}
+
+\subsection*{Protocol Phases}
+SAPPHIRE operates as a broker-mediated protocol between one orchestrating server and $N$ participating client data holders. All communication is relayed through a RabbitMQ message broker over authenticated AES-GCM channels. To explain the protocol, we are assuming that the clients are different hospitals or healthcare centers containing multiple patients' datasets that have binary diagnoses (malignant and benign) of a disease (e.g., breast cancer). The orchestrator is an entity with large computational resources to coordinate the communication, which has the responsibility to improve diagnosis accuracy but can not access raw patient data due to strict security laws (e.g., research lab or supercomputing center). 
+
+The protocol consists of five sequential phases: the initialization phase is executed only once for the entire session, and after that, four phases run iteratively for $r$ rounds. 
+
+\subsubsection*{Phase 0: Initialization and Registration}
+In this initial phase, all the clients get connected to the server, and the whole system gets prepared for the round phases by sharing all the necessary keys and parameters.
+\begin{itemize}
+    \item Initial parameters: At session startup, the orchestrator server loads a central configuration file defining the expected number of clients ($N$), rounds per session ($R$), expected number of classes (\texttt{num\_classes}), and heterogeneous model groups. It dictates these parameters to the network by broadcasting a \textsc{REGISTER} command.
+    \item Client registration: Upon receiving the broadcast, each client validates its local private dataset and replies with a \textsc{register\_reply} including the \texttt{num\_classes}. The server counts the clients (\texttt{num\_clients}) and aborts if $N \neq \texttt{num\_clients}$ or if any \texttt{num\_classes} mismatch is found. The embedding dimension is calculated as:
+\[em\_d = \max(8 \times \texttt{num\_classes},\ 16).\]
+The factor 8 creates an overcomplete space so heterogeneous models can separate their representations, and the floor of 16 prevents shrinkage for binary datasets. The server then sets the vector size as
+\[S = em\_d \times \texttt{num\_classes}.\] 
+It also calculates a 2048-bit safe prime $p$, standardized as RFC 3526 2048-bit MODP Group, with g=2, the conventional generator for this group, which generates the large prime-order subgroup \cite{kivinen2003more}.
+The orchestrator server broadcasts the tuple $(p,\, g,\, \textit{em\_d},\, S)$ to all clients.
+    
+    \item Seed generation and sharing: Each client independently generates three secrets: a Diffie-Hellman masking private key $\textit{priv\_k} < p$ for pairwise masks, an independent Diffie-Hellman communication private key $\textit{comm\_priv} < p$ for encrypted Shamir-share channels, and a set of $R$ independent 256-bit local seeds 
+$\{{local\_k}_i^{(r)}\}_{r \in [R]}$, one per round.
+It then derives the public keys
+\[ \textit{pub\_k}   = g^{\textit{priv\_k}}   \bmod p,\]
+\[ \textit{comm\_pub} = g^{\textit{comm\_priv}} \bmod p \]
+which are broadcast to all participants via the server using RabbitMQ. 
+    
+    \item {Shamir Secret Sharing:} 
+    To ensure fault tolerance, clients split their masking keys and local seeds using Shamir $(t, N)$ secret sharing, with a recovery threshold of $t = \lfloor N/2 \rfloor + 1$. 
+  \begin{small}   \[ \{{priv\_share}_{i,j}\}_{j=1}^{N} = \mathrm{ShamirSplit}_{t,N}\big({priv\_k}_i\big),\]  
+  \[ \{{loc\_share}^{(r)}_{i,j}\}_{j=1}^{N} 
+   = \mathrm{ShamirSplit}_{t,N}\big({local\_k}_i^{(r)}\big), 
+   \quad \forall r \in [R].\] \end{small}
+    These shares are distributed to peers using end-to-end AES-GCM encryption.
+   \begin{small} \[share_{i,j} = (comm\_pub_j)^{comm\_priv_i} \bmod p\]
+    \[key_{i,j} = \mathrm{HKDF\text{-}SHA256}(share_{i,j})\]
+    \[ E_{i,j} = \mathrm{AES\text{-}GCM}_{key_{i,j}}
+   \big(priv\_share_{i,j} \,\|\, \{{loc\_share}^{(r)}_{i,j}\}_{r \in [R]} \big)\] \end{small}
+    The server maintains a \emph{share escrow}, a routing table indexed by destination client, into which it files every incoming ciphertext $E_{i,j}$ under the identifier of its intended recipient $j$. 
+    
+   \item {Pairwise and local seed derivation:}
+Finally, clients derive pairwise masking seeds using Diffie-Hellman key exchange and self-masking seeds via independent per-round sampling.
+\[(pub\_k)_{i,j} = \textit{pub\_k}_j ^ {\,\textit{priv\_k}_i} \bmod p. \] 
+The pairwise masking seed is then obtained as:
+\[ seed_{i,j} = \mathrm{HKDF\text{-}SHA256}((pub\_k)_{i,j}).\]
+Additionally, each client $i$ samples $R$ independent 256-bit seeds $\{\textit{local\_k}_i^{(r)}\}, {r \in [R]} $ at initialization, where $R$ bounds the number of rounds in a session. Round $r$ employs $\textit{local\_k}_i^{(r)}$ as its self-mask seed. All $R$ seeds are Shamir-split during Phase 0 and transmitted in a single encrypted message per peer.
+    
+\end{itemize}
+
+\subsubsection*{Phase 1: Local Fedproto Training}
+At the start of each round $r$, the server broadcasts the current global prototype vector $G_r$ to all clients. If no training model is specified in the configuration, a client selects its own model and trains it on its private dataset. This phase is fully local, and no model updates leave the client.
+\begin{itemize}
+    \item {Model-Specific Forward Operations:} Clients train their chosen model (linear, neural, or tree) on their private dataset using minibatches. The forward pass is model-specific, using each batch, $X_b$:
+    \begin{itemize}
+        \item \textit{Linear Models:} For \texttt{logistic regression} variants, $X_{b}$ is projected directly into the $em\_d$ space. The \texttt{logistic\_bn} variant applies a layer normalization step immediately after projection to stabilize the gradient flow across the batch.
+        \item \textit{Neural Models:} For the Deep \texttt{MLP}, the batch passes through two hidden layers with a 20\% neuronal dropout applied during training to prevent local overfitting. For the \\texttt{Transformer Lite}, the numerical features of $X_{b}$ are first expanded into a sequence of individual tokens (\texttt{unsqueeze(-1)}). These tokens are processed by a multi-head self-attention mechanism to capture feature interdependencies before being flattened into the final vector $v$.
+        \item \textit{Tree Models:} For the \texttt{Soft Decision Tre}, $X_{b}$ is routed through the tree nodes using temperature-scaled sigmoid functions, outputting a probability distribution over the leaf nodes to compute $v$. For the \texttt{Random Forest} ensemble, $X_{b}$ first undergoes a 30\% feature-level dropout (\texttt{Dropout(p=0.3)}) before being passed to five independent soft trees. This feature bagging ensures the trees learn diverse representations, which are then averaged to produce the final batch embeddings.
+    \end{itemize}
+    \item Local FedProto Loop: 
+      Each client optimizes a composite objective composed of two different loss terms: (1) classification loss and (2) prototype alignment loss.
+    The first one is a standard cross-entropy classification loss ($\mathcal{L}_{\mathrm{CE}}$), that pushes the model to fit the client's own data well. The second is a prototype alignment loss $\mathcal{L}_{\mathrm{align}}$ that pulls each sample's normalized embedding toward the global prototype for its class. The total loss is computed by simply adding the two kinds of loss together: 
+\[ \mathcal{L}_{total} = \mathcal{L}_{\mathrm{CE}} + \mathcal{L}_{\mathrm{align}}
+    = \mathcal{L}_{\mathrm{CE}} + \frac{1}{b} \sum_{k=1}^{b} \lambda_{y_k} \left\| v_k - g_{y_k} \right\|^2_2, \]
+  where,      
+\[\lambda_c = \mathrm{clip}\!\left( \frac{\kappa}{\sqrt{n_c}},\; 
+        \lambda_{\min},\, \lambda_{\max} \right).\]  
+        This alignment loss ($\mathcal{L}_{\mathrm{align}}$) is the critical mechanism that enables true cross-family model heterogeneity. The global prototypes ($g_{y_k}$) act as universal geometric anchors. By continuously penalizing the $L_2$ distance between local embeddings and these global anchors, the composite loss forces structurally disparate models to independently learn mappings into the same shared coordinate space ($em\_d$) without requiring homogeneous feature extractors.
+
+   \item Prototype Extraction \& Quantization:
+    After training, the client computes the $L_2$-normalized mean embedding per class:
+    \[ l_{r_i} = \mathrm{norm}\left( \frac{1}{n_c} \sum_{y_k=c} \mathrm{norm}(v_k) \right) \]
+    These extracted prototypes are flattened into a one-dimensional array and multiplied by a fixed quantization scale ($Q = 100,000$). To prevent missing-class dilution during aggregation, the client appends a binary Class Presence Vector ($c_i$) indicating which classes exist in its local dataset, forming the final payload array:
+    \[  l'_{r_i} = \text{round}(l_{r_i} \times Q) \,\|\, c_i \] 
+\end{itemize}
+
+\subsubsection*{Phase 2: Secure Double Masking} 
+
+For every round $r$, client $i$ generates two masks: one pairwise mask and one private mask using a secure multi-party computation (SMPC) to its quantized array $l'_r$ using a cryptographically secure pseudorandom number generator (CSPRNG) to expand the seeds into dense noise vectors:
+\begin{small}
+\[\text{mask}_{i,j} = \text{AES-CTR}_{seed_{i,j}}(r, \, length=S) \pmod M \]
+\[\text{mask}_i = \text{AES-CTR}_{{local\_k}_i^{(r)}}(r, \, length=S) \pmod M\]
+\end{small}
+Here, $seed_{i,j} = \mathrm{HKDF\text{-}SHA256}(pub\_k_i^{priv\_k_j} \bmod p)$ and $seed_i = local\_k_i^{(r)}.$ Both masks are freshly generated in every round: the pairwise masks vary with the round index, while the self-mask additionally uses a different seed ${local\_k}_i^{(r)}$ each round. Modulo $M$ is defined to be a finite field size  large enough to accommodate the maximum possible quantized sum without overflow.
+
+The final securely masked array for client $i$, denoted as $L_{r_i}$, is computed as: 
+\begin{scriptsize}
+    \[ L_{r} = \left( l'_{r_i} + \sum_{j \in \mathcal{U},\, j > i} mask_{i,j} 
+- \sum_{j \in \mathcal{U},\, j < i} mask_{i,j} + mask_i \right) \bmod M \]
+\end{scriptsize}
+
+
+Once calculated, client $i$ transmits this highly obfuscated array $L_{r}$ to the orchestrator server.
+
+\subsubsection*{Phase 3: Secure Aggregation \& Dropout Recovery}
+ Upon receiving masked updates, the server starts client counting for a prespecified time period. If thr total number of clients that have arrived, $\texttt{num\_survivor} < t$, the round is aborted, since secure reconstruction would no longer be possible. Otherwise, the server sums all received masked arrays:
+       \begin{small}  
+        \[ \sum sum_{init}  = \Big( \sum_{i \in \mathcal{U}} L_{r} \Big) \bmod M.\]
+        \end{small}
+Every pairwise mask shared between two surviving clients appears once with each sign and cancels itself out. To clear these remaining masks, the server broadcasts an \textsc{unmask} request naming the survivor set $\mathcal{S}$ and the dropped set $\mathcal{D}$. Each surviving client replies with (1) the shares of every \emph{survivor's} local seed, and (2) the shares of every \emph{dropped} client's masking private key. It reconstructs the DH private key, $priv\_k_d$ and recomputes the pairwise seed and expands it in the exact same pairwise mask, $mask_{s,d}$.
+   
+        \[ \sum mask_{s,d} = \sum_{d \in \mathcal{D}} \left( 
+   \sum_{s \in \mathcal{S},\, s > d} mask_{s,d} 
+ - \sum_{s \in \mathcal{S},\, s < d} mask_{s,d} \right) \bmod M \]
+
+The server also reconstructs each survivor's local seed for the current round, 
+${local\_k}_s^{(r)}$, by Lagrange interpolation:
+        
+        \[ \sum mask_s = \sum_{s \in \mathcal{S}} \mathrm{PRNG}\big({local\_k}_s^{(r)}\big) 
+        \bmod M.\]
+ Finally, the server mathematically strips these masks from the initial blind summation.
+    \[ sum_{final} = \Big( sum_{init} - \sum mask_{s,d} - \sum mask_s \Big) \bmod M. \]
+    This final operation reveals the true, unmasked sum of the quantized local prototypes for the active network.
+
+\subsubsection*{Phase 4: Federated Averaging \& Global Model Update}
+
+Once the secure aggregation has successfully recovered the raw summed array, the server maps $sum_{final}$ from the positive finite field back to signed integers using a centered modulo operation to handle negatives:
+    \[ sum_{signed} = \Big((sum_{final} + \lfloor M/2 \rfloor) \bmod M \Big) - \lfloor M/2 \rfloor \]
+To update the global prototypes, the server divides the summed prototype coordinates by the number of clients that contributed to each class, as indicated by the secure Class Presence Vector ($C_c$), rather than by the total number of surviving clients. This prevents rare classes from being artificially diluted toward zero by clients missing those specific features:
+   $$G_{r+1} = \frac{sum_{signed\_protos}}{\max(C_c, 1) \times Q}$$
+This matrix is $L_2$ normalized to become the newly updated global knowledge prototype. Round $r$ concludes with the orchestrator server broadcasting $G_{r+1}$ back to the client network.
+
+Figure \ref{fig2} shows the flow diagram of the whole protocol:
+\include{fig}
+%==============================
+\section*{Security and Privacy Analysis}
+To prove the effectivness of the SAPPHIRE protocol, we analyze its defenses against common security threats in federated networks. The protocol is carefully designed to ensure data confidentiality, system availability, and fault tolerance.
+
+\subsubsection*{Privacy from orchestrator} The orchestrator server never receives local prototypes in plaintext because of the strict double masking method where the plain prototype update is obfuscated twice using cryptographic noise ($mask_{i,j}$ and $mask_i$). The server only ever sees the final aggregated result $sum_{final}$. Finally, because each round uses an independently sampled local seed $\{{local\_k}_i^{(r)}\}$, the system achieves perfect forward secrecy, ensuring past and future updates remain cryptographically sealed.
+
+\subsubsection*{Protection from network interception}
+To prevent the broker or external attackers from accessing the confidential medical data, all peer-to-peer secrets (such as the Shamir shares) are encrypted end-to-end using authenticated AES-GCM. Furthermore, Transport Layer Security (TLS) protects the communication tunnels from eavesdropping. The broker functions purely as a postman, seeing only encrypted envelopes.
+
+\subsubsection*{Resilience to Client Dropouts}
+In case of unexpected client dropout, SAPPHIRE guarantees system liveness through Shamir's Secret Sharing.  As long as the number of surviving clients meets the minimum threshold $t = \lfloor N/2 \rfloor + 1$, the server can accurately reconstruct the missing cryptographic masks of the dropped clients. It eliminates their noise from the total sum without ever exposing their actual raw data, ensuring the global model continues to train uninterruptedly.
+
+
+%==============================
+% Results
+%==============================
+\section*{Results \& Discussion}
+
+To evaluate the practical viability, cryptographic overhead, and fault tolerance of the SAPPHIRE protocol, we executed federated simulations with one orchestrator server and four simulated healthcare clients communicating via a RabbitMQ message broker.
+%==============================
+\subsection*{Experimental Setup}
+To simulate the SAPPHIRE framework, we implemented the protocol using Python, utilizing PyTorch for the local machine learning models and the \texttt{cryptography} library for secure multi-party computation operations. Network communication between the orchestrator server and the clients was coordinated through a RabbitMQ message broker. The protocol was tested on a binary classification task (identifying benign versus malignant diagnoses). The federated network was configured with one central orchestrator and four independent client nodes ($N=4$). The training session was set to run for 10 global communication rounds ($R=10$). 
+To simulate a realistic multi-center healthcare environment, the four independent client nodes ($N=4$) were each assigned a distinct clinical breast cancer dataset from the UCI Machine Learning Repository: 
+\begin{enumerate}
+    \item  Breast Cancer Wisconsin dataset that contains features computed from digitized images of fine needle aspirates (FNA) of breast masses \cite{breast_cancer_wisconsin},
+    \item  Mammographic Mass dataset consisting BI-RADS attributes and patient age extracted from mammography screening exams, providing a heterogeneous mix of ordinal and integer features \cite{mammographic_mass_161},
+    \item  Breast Cancer Coimbra dataset comprising clinical features derived from routine blood analysis (such as glucose, insulin, and resistin levels) \cite{breast_cancer_coimbra_451} and
+    \item  Ljubljana Breast Cancer dataset with categorical clinical instances (such as tumor size, node status, and age groups) \cite{breast_cancer_14}.
+\end{enumerate}
+
+\subsection*{Simulation Result}
+
+% Conclusion
+%==============================
+\section*{Conclusion}
+
+
+%==============================
+
+% Funding
+%==============================
+\section*{Funding}
+EUCAIM is co-funded by the European Union under Grant Agreement 101100633. Views and opinions expressed are, however, those of the author(s) only and do not necessarily reflect those of the European Union or the European Commission. Neither the European Union nor the granting authority can be held responsible for them.
+%==============================
+
+% Reference
+%==============================
+\bibliographystyle{vancouver}
+{\footnotesize \bibliography{citation}}
+%==============================
+
+\end{document} 
